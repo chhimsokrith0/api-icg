@@ -3,8 +3,8 @@ const bodyParser = require('body-parser');
 const cors = require('cors');
 const profileRoutes = require('./routes/profileRoutes');
 const projectRoutes = require('./routes/projectRoutes');
-const path = require('path');
-const db = require('./config/db');  // Use require for database config
+const authRoutes = require('./routes/authRoutes');
+const userRoutes = require('./routes/registerRoutes');
 require('dotenv').config();  // Load environment variables from .env
 
 const app = express();
@@ -14,6 +14,8 @@ app.use(bodyParser.json());
 app.use(cors());  // Enable CORS for all routes
 
 // Routes
+app.use('/api/users', userRoutes);
+app.use('/api/auth', authRoutes);
 app.use('/api/profiles', profileRoutes);
 app.use('/api/projects', projectRoutes);
 
