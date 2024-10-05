@@ -1,18 +1,33 @@
 const express = require('express');
 const bodyParser = require('body-parser');
+const cors = require('cors');
 const profileRoutes = require('./routes/profileRoutes');
 const projectRoutes = require('./routes/projectRoutes');
 const path = require('path');
+const db = require('./config/db'); // Import MySQL connection
+require('dotenv').config(); // Load environment variables from .env file
 
 const app = express();
 
 // Middleware
 app.use(bodyParser.json());
+app.use(cors());  // Enable CORS for all routes
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));  // Serve the uploads folder
 
 // Routes
 app.use('/api/profiles', profileRoutes);
 app.use('/api/projects', projectRoutes);
+
+// Handle 404 errors
+app.use((req, res, next) => {
+  res.status(404).json({ message: 'Resource not found' });
+});
+
+// Error handling middleware
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).json({ message: 'Something went wrong!' });
+});
 
 // Start the server
 const PORT = process.env.PORT || 3000;
