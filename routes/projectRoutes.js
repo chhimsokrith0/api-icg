@@ -1,28 +1,28 @@
-
 const express = require('express');
 const { body, validationResult } = require('express-validator');
-const router = express.Router();
 const projectController = require('../controllers/projectController');
 const multer = require('multer');
-const path = require('path');
+const { CloudinaryStorage } = require('multer-storage-cloudinary');
+const cloudinary = require('../config/cloudinaryConfig'); // Cloudinary config
 
-// Set up multer for file upload
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, 'uploads/');  // Directory to store images
+const router = express.Router();
+
+// Set up multer to use Cloudinary storage
+const storage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: 'project_images', // Folder in Cloudinary for project images
+    allowed_formats: ['jpeg', 'png', 'jpg'],
   },
-  filename: function (req, file, cb) {
-    cb(null, file.fieldname + '-' + Date.now() + path.extname(file.originalname)); // Give each file a unique name
-  }
 });
 
 const upload = multer({ storage: storage });
 
-// Validation rules
+// Validation rules for creating/updating projects
 const projectValidationRules = [
   body('project_name').notEmpty().withMessage('Project name is required.'),
   body('description').notEmpty().withMessage('Description is required.'),
-  body('profile_id').isInt({ gt: 0 }).withMessage('Valid profile_id is required.')
+  body('profile_id').isInt({ gt: 0 }).withMessage('Valid profile_id is required.'),
 ];
 
 // Middleware for checking validation errors

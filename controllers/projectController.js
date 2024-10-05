@@ -1,4 +1,5 @@
 const db = require('../config/db');
+const cloudinary = require('../config/cloudinaryConfig');
 
 // Get all projects with associated profile details
 exports.getAllProjects = (req, res) => {
@@ -31,32 +32,52 @@ exports.getProjectById = (req, res) => {
   });
 };
 
-// Create a new project with profile_id and image upload
-exports.createProject = (req, res) => {
+// Create a new project with profile_id and image upload to Cloudinary
+exports.createProject = async (req, res) => {
   const { project_name, description, profile_id } = req.body;
-  const projectImage = req.file ? `uploads/${req.file.filename}` : null;
 
-  const query = 'INSERT INTO projects (project_name, description, profile_id, image_url) VALUES (?, ?, ?, ?)';
-  db.query(query, [project_name, description, profile_id, projectImage], (err, results) => {
-    if (err) {
-      return res.status(500).json({ error: err.message });
+  try {
+    // Upload image to Cloudinary if file is provided
+    let projectImage = null;
+    if (req.file) {
+      const uploadedImage = await cloudinary.uploader.upload(req.file.path);
+      projectImage = uploadedImage.secure_url; // Get the secure URL from Cloudinary
     }
-    res.json({ id: results.insertId, project_name, description, profile_id, image_url: projectImage });
-  });
+
+    const query = 'INSERT INTO projects (project_name, description, profile_id, image_url) VALUES (?, ?, ?, ?)';
+    db.query(query, [project_name, description, profile_id, projectImage], (err, results) => {
+      if (err) {
+        return res.status(500).json({ error: err.message });
+      }
+      res.json({ id: results.insertId, project_name, description, profile_id, image_url: projectImage });
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 };
 
-// Update a project by ID with profile_id and image upload
-exports.updateProject = (req, res) => {
+// Update a project by ID with profile_id and image upload to Cloudinary
+exports.updateProject = async (req, res) => {
   const { project_name, description, profile_id } = req.body;
-  const projectImage = req.file ? `uploads/${req.file.filename}` : req.body.existingImage;
 
-  const query = 'UPDATE projects SET project_name = ?, description = ?, profile_id = ?, image_url = ? WHERE id = ?';
-  db.query(query, [project_name, description, profile_id, projectImage, req.params.id], (err, results) => {
-    if (err) {
-      return res.status(500).json({ error: err.message });
+  try {
+    // If a new file is provided, upload it to Cloudinary, otherwise use the existing image
+    let projectImage = req.body.existingImage;
+    if (req.file) {
+      const uploadedImage = await cloudinary.uploader.upload(req.file.path);
+      projectImage = uploadedImage.secure_url; // Get the secure URL from Cloudinary
     }
-    res.json({ message: 'Project updated successfully!', image_url: projectImage });
-  });
+
+    const query = 'UPDATE projects SET project_name = ?, description = ?, profile_id = ?, image_url = ? WHERE id = ?';
+    db.query(query, [project_name, description, profile_id, projectImage, req.params.id], (err, results) => {
+      if (err) {
+        return res.status(500).json({ error: err.message });
+      }
+      res.json({ message: 'Project updated successfully!', image_url: projectImage });
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 };
 
 // Delete a project by ID
