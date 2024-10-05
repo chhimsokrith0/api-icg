@@ -4,15 +4,14 @@ const cors = require('cors');
 const profileRoutes = require('./routes/profileRoutes');
 const projectRoutes = require('./routes/projectRoutes');
 const path = require('path');
-const db = require('./config/db'); // Import MySQL connection
-require('dotenv').config(); // Load environment variables from .env file
+const db = require('./config/db');  // Use require for database config
+require('dotenv').config();  // Load environment variables from .env
 
 const app = express();
 
 // Middleware
 app.use(bodyParser.json());
 app.use(cors());  // Enable CORS for all routes
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));  // Serve the uploads folder
 
 // Routes
 app.use('/api/profiles', profileRoutes);

@@ -22,10 +22,10 @@ exports.getProfileById = (req, res) => {
   });
 };
 
-// Create a new profile with image upload
+// Create a new profile with image upload to Cloudinary
 exports.createProfile = (req, res) => {
   const { name, title, bio, linkedin_url, github_url, email } = req.body;
-  const profileImage = req.file ? req.file.filename : null;
+  const profileImage = req.file ? req.file.path : null; // Cloudinary URL is in req.file.path
 
   const query = 'INSERT INTO profiles (name, title, bio, linkedin_url, github_url, email, profile_image_url) VALUES (?, ?, ?, ?, ?, ?, ?)';
   db.query(query, [name, title, bio, linkedin_url, github_url, email, profileImage], (err, results) => {
@@ -36,10 +36,10 @@ exports.createProfile = (req, res) => {
   });
 };
 
-// Update a profile by ID with image upload
+// Update a profile by ID with image upload to Cloudinary
 exports.updateProfile = (req, res) => {
   const { name, title, bio, linkedin_url, github_url, email } = req.body;
-  const profileImage = req.file ? req.file.filename : req.body.existingImage;
+  const profileImage = req.file ? req.file.path : req.body.existingImage; // Use Cloudinary URL
 
   const query = 'UPDATE profiles SET name = ?, title = ?, bio = ?, linkedin_url = ?, github_url = ?, email = ?, profile_image_url = ? WHERE id = ?';
   db.query(query, [name, title, bio, linkedin_url, github_url, email, profileImage, req.params.id], (err, results) => {

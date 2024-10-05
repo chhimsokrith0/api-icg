@@ -2,18 +2,18 @@ const express = require('express');
 const { body, validationResult } = require('express-validator');
 const profileController = require('../controllers/profileController');
 const multer = require('multer');
-const path = require('path');
+const { CloudinaryStorage } = require('multer-storage-cloudinary');
+const cloudinary = require('../config/cloudinaryConfig');  // Use require instead of import
 
 const router = express.Router();
 
-// Set up multer for file upload
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, path.join(__dirname, '../uploads'));  // Directory to store images
+// Set up multer to use Cloudinary storage
+const storage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: 'profile_images',
+    allowed_formats: ['jpeg', 'png', 'jpg'],
   },
-  filename: function (req, file, cb) {
-    cb(null, file.fieldname + '-' + Date.now() + path.extname(file.originalname));  // Unique file name
-  }
 });
 
 const upload = multer({ storage: storage });
