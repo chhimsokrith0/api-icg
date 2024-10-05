@@ -1,5 +1,4 @@
 const db = require('../config/db');
-const path = require('path');
 
 // Get all profiles
 exports.getAllProfiles = (req, res) => {
@@ -40,7 +39,7 @@ exports.createProfile = (req, res) => {
 // Update a profile by ID with image upload
 exports.updateProfile = (req, res) => {
   const { name, title, bio, linkedin_url, github_url, email } = req.body;
-  const profileImage = req.file ? req.file.filename : req.body.existingImage; // Keep existing image if no new image is uploaded
+  const profileImage = req.file ? req.file.filename : req.body.existingImage;
 
   const query = 'UPDATE profiles SET name = ?, title = ?, bio = ?, linkedin_url = ?, github_url = ?, email = ?, profile_image_url = ? WHERE id = ?';
   db.query(query, [name, title, bio, linkedin_url, github_url, email, profileImage, req.params.id], (err, results) => {

@@ -1,17 +1,18 @@
 const express = require('express');
 const { body, validationResult } = require('express-validator');
-const router = express.Router();
 const profileController = require('../controllers/profileController');
 const multer = require('multer');
 const path = require('path');
 
+const router = express.Router();
+
 // Set up multer for file upload
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, 'uploads/');  // Directory to store images
+    cb(null, path.join(__dirname, '../uploads'));  // Directory to store images
   },
   filename: function (req, file, cb) {
-    cb(null, file.fieldname + '-' + Date.now() + path.extname(file.originalname)); // Give each file a unique name
+    cb(null, file.fieldname + '-' + Date.now() + path.extname(file.originalname));  // Unique file name
   }
 });
 
@@ -35,10 +36,10 @@ const validate = (req, res, next) => {
 };
 
 // Routes for profile CRUD operations
-router.get('/', profileController.getAllProfiles); // Get all profiles
-router.get('/:id', profileController.getProfileById); // Get profile by ID
-router.post('/', upload.single('profileImage'), profileValidationRules, validate, profileController.createProfile); // Create a new profile with image upload and validation
-router.put('/:id', upload.single('profileImage'), profileValidationRules, validate, profileController.updateProfile); // Update profile by ID with image upload and validation
-router.delete('/:id', profileController.deleteProfile); // Delete profile by ID
+router.get('/', profileController.getAllProfiles);
+router.get('/:id', profileController.getProfileById);
+router.post('/', upload.single('profileImage'), profileValidationRules, validate, profileController.createProfile);
+router.put('/:id', upload.single('profileImage'), profileValidationRules, validate, profileController.updateProfile);
+router.delete('/:id', profileController.deleteProfile);
 
 module.exports = router;
