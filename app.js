@@ -5,6 +5,8 @@ const profileRoutes = require('./routes/profileRoutes');
 const projectRoutes = require('./routes/projectRoutes');
 const authRoutes = require('./routes/authRoutes');
 const userRoutes = require('./routes/registerRoutes');
+const categoryRoutes = require('./routes/categoryRoutes');
+const projectDetailsRoutes = require('./routes/projectDetailsRoutes');
 require('dotenv').config();  // Load environment variables from .env
 
 const app = express();
@@ -18,6 +20,8 @@ app.use('/api/users', userRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/profiles', profileRoutes);
 app.use('/api/projects', projectRoutes);
+app.use('/api/category', categoryRoutes);
+app.use('/api/project-details', projectDetailsRoutes);
 
 // Handle 404 errors
 app.use((req, res, next) => {
