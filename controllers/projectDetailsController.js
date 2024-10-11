@@ -29,7 +29,7 @@ exports.createProjectDetail = (req, res) => {
   const projectImage = req.file ? req.file.path : null; // Cloudinary URL for the image
 
   const query = `
-    INSERT INTO project_details (project_id, detail_description, technologies_used, documentation_url, category_id, project_image_url)
+    INSERT INTO project_details (project_id, detail_description, technologies_used, documentation_url, category_id, image_url)
     VALUES (?, ?, ?, ?, ?, ?)
   `;
   db.query(query, [project_id, detail_description, technologies_used, documentation_url, category_id, projectImage], (err, results) => {
@@ -47,7 +47,7 @@ exports.updateProjectDetail = (req, res) => {
 
   const query = `
     UPDATE project_details
-    SET detail_description = ?, technologies_used = ?, documentation_url = ?, category_id = ?, project_image_url = ?, updated_at = CURRENT_TIMESTAMP
+    SET detail_description = ?, technologies_used = ?, documentation_url = ?, category_id = ?, image_url = ?, updated_at = CURRENT_TIMESTAMP
     WHERE id = ?
   `;
   db.query(query, [detail_description, technologies_used, documentation_url, category_id, projectImage, req.params.id], (err, results) => {
