@@ -23,7 +23,6 @@ const upload = multer({ storage: storage });
 const projectDetailValidationRules = [
   body('detail_description').notEmpty().withMessage('Detail description is required.'),
   body('technologies_used').notEmpty().withMessage('Technologies used are required.'),
-  body('github_url').optional().isURL().withMessage('A valid GitHub URL is required.'),
   body('documentation_url').optional().isURL().withMessage('A valid documentation URL is required.')
 ];
 
