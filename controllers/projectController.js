@@ -52,7 +52,8 @@ exports.getProjectById = (req, res) => {
 exports.createProject = async (req, res) => {
   upload(req, res, async (err) => {
     if (err) {
-      return res.status(500).json({ error: 'File upload error' });
+      console.error('Multer Error:', err);
+      return res.status(500).json({ error: 'File upload error: ' + err.message });
     }
 
     const { project_name, description, start_date, end_date, details, categories } = req.body;
