@@ -12,6 +12,7 @@ const storage = new CloudinaryStorage({
   },
 });
 
+// Multer configuration for handling image uploads
 const upload = multer({ storage: storage }).fields([
   { name: 'project_image', maxCount: 1 },
   { name: 'detail_image', maxCount: 10 }, // Multiple detail images
@@ -49,7 +50,7 @@ exports.getProjectById = (req, res) => {
 };
 
 // Create a new project with profile_id and image upload to Cloudinary
-exports.createProject = async (req, res) => {
+exports.createProject = (req, res) => {
   upload(req, res, async (err) => {
     if (err) {
       console.error('Multer Error:', err);
