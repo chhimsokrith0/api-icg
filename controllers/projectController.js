@@ -11,10 +11,12 @@ const storage = new CloudinaryStorage({
     allowed_formats: ['jpg', 'png', 'jpeg'],
   },
 });
+
 const upload = multer({ storage: storage }).fields([
   { name: 'project_image', maxCount: 1 },
   { name: 'detail_image', maxCount: 10 }, // Multiple detail images
 ]);
+
 // Get all projects with associated profile details
 exports.getAllProjects = (req, res) => {
   const query = `
@@ -97,10 +99,16 @@ exports.createProject = async (req, res) => {
           VALUES ?
         `;
 
-        const detailValues = details.map((detail, index) => {
-          const detailImage = req.files[`detail_image[${index}]`] ? req.files[`detail_image[${index}]`][0].path : null;
-          return [projectId, detail.description, detail.technologies_used, detailImage, detail.category_id];
-        });
+        const detailValues = await Promise.all(
+          details.map(async (detail, index) => {
+            let detailImageUrl = null;
+            if (req.files[`detail_image[${index}]`]) {
+              const uploadedDetailImage = await cloudinary.uploader.upload(req.files[`detail_image[${index}]`][0].path);
+              detailImageUrl = uploadedDetailImage.secure_url;
+            }
+            return [projectId, detail.description, detail.technologies_used, detailImageUrl, detail.category_id];
+          })
+        );
 
         await new Promise((resolve, reject) => {
           db.query(detailQuery, [detailValues], (err, result) => {

@@ -37,7 +37,7 @@ const validate = (req, res, next) => {
 // Routes for project CRUD operations
 router.get('/', projectController.getAllProjects); // Get all projects with profile details
 router.get('/:id', projectController.getProjectById); // Get project by ID with profile details
-router.post('/', upload.single('projectImage'), projectValidationRules, validate, projectController.createProject); // Create a new project with image upload and validation
+router.post('/', upload.fields([{ name: 'project_image', maxCount: 1 }, { name: 'detail_image', maxCount: 10 }]), projectValidationRules, validate, projectController.createProject); // Create a new project with image upload and validation
 router.put('/:id', upload.single('projectImage'), projectValidationRules, validate, projectController.updateProject); // Update project by ID with image upload and validation
 router.delete('/:id', projectController.deleteProject); // Delete project by ID
 
