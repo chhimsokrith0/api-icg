@@ -50,14 +50,14 @@ exports.getProjectById = (req, res) => {
 };
 
 // Create a new project with profile_id and image upload to Cloudinary
-exports.createProject = (req, res) => {
+exports.createProject = async (req, res) => {
   upload(req, res, async (err) => {
     if (err) {
       console.error('Multer Error:', err);
       return res.status(500).json({ error: 'File upload error: ' + err.message });
     }
 
-    const { project_name, description, start_date, end_date, details, categories } = req.body;
+    const { project_name, description, start_date, end_date, details, categories, profile_id } = req.body;
     let projectImage = null;
 
     try {
@@ -72,7 +72,7 @@ exports.createProject = (req, res) => {
         INSERT INTO projects (project_name, description, image_url, start_date, end_date, profile_id)
         VALUES (?, ?, ?, ?, ?, ?)
       `;
-      const projectValues = [project_name, description, projectImage, start_date, end_date, 1]; // Assuming profile_id is 1 for now
+      const projectValues = [project_name, description, projectImage, start_date, end_date, profile_id || 1]; // Assuming profile_id = 1 for now
       const projectResult = await new Promise((resolve, reject) => {
         db.query(projectQuery, projectValues, (err, result) => {
           if (err) reject(err);
@@ -82,51 +82,55 @@ exports.createProject = (req, res) => {
 
       const projectId = projectResult.insertId;
 
-      // Insert categories into the categories table
+      // Insert categories into the categories table and get their IDs
+      const categoryIds = [];
       if (categories && categories.length > 0) {
-        const categoryQuery = `INSERT INTO categories (category_name) VALUES ?`;
-        const categoryValues = categories.map((category) => [category]);
-        await new Promise((resolve, reject) => {
-          db.query(categoryQuery, [categoryValues], (err, result) => {
-            if (err) reject(err);
-            else resolve(result);
+        for (const category of categories) {
+          const categoryQuery = `INSERT INTO categories (category_name) VALUES (?)`;
+          const categoryResult = await new Promise((resolve, reject) => {
+            db.query(categoryQuery, [category], (err, result) => {
+              if (err) reject(err);
+              else resolve(result);
+            });
           });
-        });
+          categoryIds.push(categoryResult.insertId);
+        }
       }
 
       // Insert project details into the project_details table
       if (details && details.length > 0) {
-        const detailQuery = `
-          INSERT INTO project_details (project_id, detail_description, technologies_used, image_url, category_id)
-          VALUES ?
-        `;
+        for (let index = 0; index < details.length; index++) {
+          const detail = details[index];
+          let detailImageUrl = null;
 
-        const detailValues = await Promise.all(
-          details.map(async (detail, index) => {
-            let detailImageUrl = null;
-            if (req.files[`detail_image[${index}]`]) {
-              const uploadedDetailImage = await cloudinary.uploader.upload(req.files[`detail_image[${index}]`][0].path);
-              detailImageUrl = uploadedDetailImage.secure_url;
-            }
-            return [projectId, detail.description, detail.technologies_used, detailImageUrl, detail.category_id];
-          })
-        );
+          // Upload detail image if exists
+          if (req.files[`detail_image[${index}]`]) {
+            const uploadedDetailImage = await cloudinary.uploader.upload(req.files[`detail_image[${index}]`][0].path);
+            detailImageUrl = uploadedDetailImage.secure_url;
+          }
 
-        await new Promise((resolve, reject) => {
-          db.query(detailQuery, [detailValues], (err, result) => {
-            if (err) reject(err);
-            else resolve(result);
+          const detailQuery = `
+            INSERT INTO project_details (project_id, detail_description, technologies_used, image_url, category_id)
+            VALUES (?, ?, ?, ?, ?)
+          `;
+          const detailValues = [projectId, detail.description, detail.technologies_used, detailImageUrl, detail.category_id || categoryIds[index] || 1];
+          await new Promise((resolve, reject) => {
+            db.query(detailQuery, detailValues, (err, result) => {
+              if (err) reject(err);
+              else resolve(result);
+            });
           });
-        });
+        }
       }
 
       res.status(201).json({ message: 'Project, details, and categories created successfully!' });
     } catch (error) {
-      console.error(error);
+      console.error('Error in createProject:', error);
       res.status(500).json({ error: 'Failed to create project with details and categories' });
     }
   });
 };
+
 
 // Update a project by ID with profile_id and image upload to Cloudinary
 exports.updateProject = async (req, res) => {
