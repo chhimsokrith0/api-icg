@@ -1,5 +1,5 @@
-// projectDetailsController.js
 const db = require('../config/db');
+const cloudinary = require('../config/cloudinaryConfig');
 
 // Get all project details
 exports.getAllProjectDetails = (req, res) => {
@@ -36,7 +36,7 @@ exports.createProjectDetail = (req, res) => {
     if (err) {
       return res.status(500).json({ error: err.message });
     }
-    res.json({ id: results.insertId, ...req.body, project_image_url: projectImage });
+    res.json({ id: results.insertId, ...req.body });
   });
 };
 

@@ -59,7 +59,7 @@ exports.register = async (req, res) => {
 
 // Read - Get all users
 exports.getAllUsers = (req, res) => {
-  const query = 'SELECT id, username, email FROM users'; // Fetch only necessary fields
+  const query = 'SELECT * FROM users'; // Fetch only necessary fields
   db.query(query, (err, results) => {
     if (err) {
       return res.status(500).json({ error: 'Database error during fetching users' });
