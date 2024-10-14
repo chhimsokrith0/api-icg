@@ -22,8 +22,7 @@ const upload = multer({ storage: storage }).fields([
 exports.getAllProjects = (req, res) => {
   const query = `
     SELECT * FROM projects
-    INNER JOIN profiles
-    ON projects.profile_id = profiles.id
+    INNER JOIN profiles ON projects.profile_id = profiles.id
   `;
   db.query(query, (err, results) => {
     if (err) {
@@ -37,8 +36,7 @@ exports.getAllProjects = (req, res) => {
 exports.getProjectById = (req, res) => {
   const query = `
     SELECT * FROM projects
-    INNER JOIN profiles
-    ON projects.profile_id = profiles.id
+    INNER JOIN profiles ON projects.profile_id = profiles.id
     WHERE projects.id = ?
   `;
   db.query(query, [req.params.id], (err, results) => {
@@ -53,7 +51,7 @@ exports.getProjectById = (req, res) => {
 exports.createProject = async (req, res) => {
   upload(req, res, async (err) => {
     if (err) {
-      console.error('Multer Error:', err);
+      console.error('Multer Error:', err.message);
       return res.status(500).json({ error: 'File upload error: ' + err.message });
     }
 
@@ -62,7 +60,7 @@ exports.createProject = async (req, res) => {
 
     try {
       // Upload main project image if exists
-      if (req.files['project_image']) {
+      if (req.files && req.files['project_image']) {
         const uploadedImage = await cloudinary.uploader.upload(req.files['project_image'][0].path);
         projectImage = uploadedImage.secure_url;
       }
@@ -72,7 +70,7 @@ exports.createProject = async (req, res) => {
         INSERT INTO projects (project_name, description, image_url, start_date, end_date, profile_id)
         VALUES (?, ?, ?, ?, ?, ?)
       `;
-      const projectValues = [project_name, description, projectImage, start_date, end_date, profile_id || 1]; // Assuming profile_id = 1 for now
+      const projectValues = [project_name, description, projectImage, start_date, end_date, profile_id || 1];
       const projectResult = await new Promise((resolve, reject) => {
         db.query(projectQuery, projectValues, (err, result) => {
           if (err) reject(err);
@@ -104,7 +102,7 @@ exports.createProject = async (req, res) => {
           let detailImageUrl = null;
 
           // Upload detail image if exists
-          if (req.files[`detail_image[${index}]`]) {
+          if (req.files && req.files[`detail_image[${index}]`]) {
             const uploadedDetailImage = await cloudinary.uploader.upload(req.files[`detail_image[${index}]`][0].path);
             detailImageUrl = uploadedDetailImage.secure_url;
           }
@@ -125,12 +123,11 @@ exports.createProject = async (req, res) => {
 
       res.status(201).json({ message: 'Project, details, and categories created successfully!' });
     } catch (error) {
-      console.error('Error in createProject:', error);
-      res.status(500).json({ error: 'Failed to create project with details and categories' });
+      console.error('Error in createProject:', error.message);
+      res.status(500).json({ error: `Failed to create project: ${error.message}` });
     }
   });
 };
-
 
 // Update a project by ID with profile_id and image upload to Cloudinary
 exports.updateProject = async (req, res) => {
