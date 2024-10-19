@@ -4,10 +4,10 @@ require('dotenv').config(); // Load environment variables from .env file
 
 // Create a MySQL connection using environment variables
 const db = mysql.createConnection({
-  host: "sql12.freemysqlhosting.net",      // MySQL server address from .env
-  user: "sql12738867",       // MySQL username from .env
-  password: "k88JmI4p2V", // MySQL password from .env
-  database: "sql12738867"   // MySQL database name from .env
+  host: process.env.DB_HOST,      // MySQL server address from .env
+  user: process.env.DB_USER,       // MySQL username from .env
+  password: process.env.DB_PASSWORD, // MySQL password from .env
+  database: process.env.DB_NAME   // MySQL database name from .env
 });
 
 // const db = mysql.createConnection({
